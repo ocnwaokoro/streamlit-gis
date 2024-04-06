@@ -6,7 +6,7 @@ from streamlit_folium import st_folium
 APP_TITLE = "Ghana Health & Population Report"
 APP_SUB_TITLE = "Source: Ghana Statistical Service & Clinton Health Access Initiative"
 
-def display_region_facts(df, region, metric_title, number_format='{:,}',is_pop=False):
+def display_region_facts(df, region, metric_title, number_format='{:,}', is_pop=False):
         df = df[df["Region_202"]==region]
         if is_pop:
             total = df["VALUE"].sum()

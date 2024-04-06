@@ -67,7 +67,7 @@ def main():
     df_fac_reg = pd.read_csv("data/GH/gh-facilities-per-region.csv")
     df_pop_dis = pd.read_csv("data/GH/gh-population-count-per-district.csv")
     df_pop_reg = pd.read_csv("data/GH/gh-population-count-per-region.csv")
-    
+
     df_fac_pop_reg = pd.DataFrame()
     df_fac_pop_reg["region"] = df_fac_reg["Region_202"].unique()
     df_fac_pop_reg = df_fac_pop_reg.dropna()
@@ -90,6 +90,9 @@ def main():
         with col2:
             metric_title = f"Population"
             st.metric(metric_title, '{:,}'.format(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"population"]))
+        st.write((df_fac_reg[df_fac_reg["Region_202"]==region])
+                 .loc[:, df_fac_reg.columns[:-7]]
+                 .drop(["SUBDIS","GHS_SUBDIS","LOCALITY","GHS_FACILITY","TYPE"]))
     else:
         st.subheader("Total Facts")
         col1, col2 = st.columns(2)
@@ -99,6 +102,10 @@ def main():
         with col2:
             metric_title = f"Total Population"
             st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg["population"].sum())))
+        st.write((df_fac_reg
+                  .loc[:, df_fac_reg.columns[:-7]])
+                  .sample(frac=1)
+                  .drop(["SUBDIS","GHS_SUBDIS","LOCALITY","GHS_FACILITY","TYPE"]))
 
 if __name__ == "__main__":
     main()

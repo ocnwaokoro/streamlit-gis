@@ -1,2 +1,3 @@
 streamlit-gis-env
-data
+data/GH/gh-facilities-per-district.csv
+data/GH/gh-population-count-per-district.csv

@@ -63,9 +63,9 @@ def main():
     st.caption(APP_SUB_TITLE)
 
     # LOAD DATA
-    df_fac_dis = pd.read_csv("data/GH/gh-facilities-per-district.csv")
+    # df_fac_dis = pd.read_csv("data/GH/gh-facilities-per-district.csv")
     df_fac_reg = pd.read_csv("data/GH/gh-facilities-per-region.csv")
-    df_pop_dis = pd.read_csv("data/GH/gh-population-count-per-district.csv")
+    # df_pop_dis = pd.read_csv("data/GH/gh-population-count-per-district.csv")
     df_pop_reg = pd.read_csv("data/GH/gh-population-count-per-region.csv")
 
     df_fac_pop_reg = pd.DataFrame()

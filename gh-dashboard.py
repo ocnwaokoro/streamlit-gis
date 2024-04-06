@@ -31,10 +31,7 @@ def display_map(df):
         fill_color="YlGn",
         fill_opacity=1,
         highlight=True,
-        dragging=False,
-        legend_name="Mapa",
-        control=False,
-        bins=5
+        bins=9
     )
     choropleth.geojson.add_to(map)
 
@@ -86,19 +83,19 @@ def main():
         col1, col2 = st.columns(2)
         with col1:
             metric_title = f"Number of Health Facilities"
-            st.metric(metric_title, '{:,}'.format(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"facilities"]))
+            st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"facilities"])))
         with col2:
             metric_title = f"Population"
-            st.metric(metric_title, '{:,}'.format(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"population"]))
+            st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"population"])))
         st.write(df_fac_reg
                  [df_fac_reg["Region_202"]==region]
                  [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
                  .reset_index(drop=True)
                  .reset_index(drop=False)
-                .rename(columns={'index': 'new_index'})
-                .assign(new_index=lambda x: x['new_index'] + 1)
-                .set_index("new_index")
-                .rename_axis(None, axis=0))
+                 .rename(columns={'index': 'new_index'})
+                 .assign(new_index=lambda x: x['new_index'] + 1)
+                 .set_index("new_index")
+                 .rename_axis(None, axis=0))
     else:
         st.subheader("Overall Facts")
         col1, col2 = st.columns(2)

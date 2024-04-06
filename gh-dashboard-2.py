@@ -54,6 +54,7 @@ def display_map(df):
         marker=folium.Circle(radius=1028, fill_color="orange", fill_opacity=0.4, color="black", weight=1),
         tooltip=folium.GeoJsonTooltip(fields=["FACILITY"], labels=False),
         overlay=True,
+        name="health_facilities"
     ).add_to(map)
     folium.LayerControl().add_to(map)
 

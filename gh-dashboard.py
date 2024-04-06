@@ -92,9 +92,15 @@ def main():
             st.metric(metric_title, '{:,}'.format(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"population"]))
         st.write(df_fac_reg
                  [df_fac_reg["Region_202"]==region]
-                 [["FACILITY","REGION","DISTRICT","OWNERSHIP"]])
+                 [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
+                 .reset_index(drop=True)
+                 .reset_index(drop=False)
+                .rename(columns={'index': 'new_index'})
+                .assign(new_index=lambda x: x['new_index'] + 1)
+                .set_index("new_index")
+                .rename_axis(None, axis=0))
     else:
-        st.subheader("Total Facts")
+        st.subheader("Overall Facts")
         col1, col2 = st.columns(2)
         with col1:
             metric_title = f"Total Number of Health Facilities"
@@ -103,8 +109,15 @@ def main():
             metric_title = f"Total Population"
             st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg["population"].sum())))
         st.write(df_fac_reg
-                 [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
-                 .sample(frac=1))
+             [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
+             .sample(frac=1)
+             .reset_index(drop=True)
+             .reset_index(drop=False)
+             .rename(columns={'index': 'new_index'})
+             .assign(new_index=lambda x: x['new_index'] + 1)
+             .set_index("new_index")
+             .rename_axis(None, axis=0)
+         )
         
 if __name__ == "__main__":
     main()

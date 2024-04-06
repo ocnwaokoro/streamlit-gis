@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
+import branca
 
-APP_TITLE = "Ghana Health & Population Report"
+APP_TITLE = "Ghana Health Access & Population Report"
 APP_SUB_TITLE = "Source: Ghana Statistical Service & Clinton Health Access Initiative"
 
 def display_region_facts(df, region, metric_title, number_format='{:,}', is_pop=False):
@@ -34,9 +35,7 @@ def display_map(df):
         bins=9
     )
     choropleth.geojson.add_to(map)
-
     df = df.set_index("region")
-
     for feature in choropleth.geojson.data["features"]:
         region = feature["properties"]["Region_202"]
         feature["properties"]["region"] = region
@@ -47,17 +46,30 @@ def display_map(df):
         folium.features.GeoJsonTooltip(["region_title", "population", "num_facilities"],
         labels=False)
     )
-    st_map = st_folium(map, width=700, height=600)
+    min_scale = min(df["population"])
+    max_scale = max(df["population"])
+    cmap = branca.colormap.linear.YlGn_09.scale(min_scale, max_scale)
+    cmap = cmap.to_step(index=[min_scale,
+                               min_scale+(max_scale-min_scale)*1/4, 
+                               min_scale+(max_scale-min_scale)*2/4,
+                               min_scale+(max_scale-min_scale)*3/4, 
+                               max_scale])
+    cmap.caption = "Population"
+    cmap.add_to(map)
+    st_map = st_folium(map, width=550, height=700)
     region = ""
-    if (st_map["last_active_drawing"] and (st_map["last_clicked"] == st_map["last_object_clicked"])):
+    if (st_map["last_active_drawing"] and 
+        (st_map["last_clicked"] == st_map["last_object_clicked"])):
         region = st_map["last_active_drawing"]["properties"]["region"]        
     return region
 
 def main():
     # config for setting app title
-    st.set_page_config(APP_TITLE)
+    st.set_page_config(APP_TITLE, layout="wide")
     st.title(APP_TITLE)
     st.caption(APP_SUB_TITLE)
+
+    column1, column2 = st.columns(2)
 
     # LOAD DATA
     # df_fac_dis = pd.read_csv("data/GH/gh-facilities-per-district.csv")
@@ -75,46 +87,48 @@ def main():
         df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"facilities"] = fac
            
     # DISPLAY FILTERS & MAP
-    region = display_map(df_fac_pop_reg)
+    with column1:
+        region = display_map(df_fac_pop_reg)
 
     # DISPLAY METRICS
-    if region:
-        st.subheader(f'{region} Region Facts')
-        col1, col2 = st.columns(2)
-        with col1:
-            metric_title = f"Number of Health Facilities"
-            st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"facilities"])))
-        with col2:
-            metric_title = f"Population"
-            st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"population"])))
-        st.write(df_fac_reg
-                 [df_fac_reg["Region_202"]==region]
-                 [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
-                 .reset_index(drop=True)
-                 .reset_index(drop=False)
-                 .rename(columns={'index': 'new_index'})
-                 .assign(new_index=lambda x: x['new_index'] + 1)
-                 .set_index("new_index")
-                 .rename_axis(None, axis=0))
-    else:
-        st.subheader("Overall Facts")
-        col1, col2 = st.columns(2)
-        with col1:
-            metric_title = f"Total Number of Health Facilities"
-            st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg["facilities"].sum())))
-        with col2:
-            metric_title = f"Total Population"
-            st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg["population"].sum())))
-        st.write(df_fac_reg
-             [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
-             .sample(frac=1)
-             .reset_index(drop=True)
-             .reset_index(drop=False)
-             .rename(columns={'index': 'new_index'})
-             .assign(new_index=lambda x: x['new_index'] + 1)
-             .set_index("new_index")
-             .rename_axis(None, axis=0)
-         )
+    with column2:
+        if region:
+            st.subheader(f'{region} Region Facts')
+            col1, col2 = st.columns(2)
+            with col1:
+                metric_title = f"Number of Health Facilities"
+                st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"facilities"])))
+            with col2:
+                metric_title = f"Population"
+                st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg.loc[list(df_fac_pop_reg["region"]).index(region),"population"])))
+            st.write(df_fac_reg
+                    [df_fac_reg["Region_202"]==region]
+                    [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
+                    .reset_index(drop=True)
+                    .reset_index(drop=False)
+                    .rename(columns={'index': 'new_index'})
+                    .assign(new_index=lambda x: x['new_index'] + 1)
+                    .set_index("new_index")
+                    .rename_axis(None, axis=0))
+        else:
+            st.subheader("Overall Facts")
+            col1, col2 = st.columns(2)
+            with col1:
+                metric_title = f"Total Number of Health Facilities"
+                st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg["facilities"].sum())))
+            with col2:
+                metric_title = f"Total Population"
+                st.metric(metric_title, '{:,}'.format(round(df_fac_pop_reg["population"].sum())))
+            st.write(df_fac_reg
+                [["FACILITY","REGION","DISTRICT","OWNERSHIP"]]
+                .sample(frac=1)
+                .reset_index(drop=True)
+                .reset_index(drop=False)
+                .rename(columns={'index': 'new_index'})
+                .assign(new_index=lambda x: x['new_index'] + 1)
+                .set_index("new_index")
+                .rename_axis(None, axis=0)
+            )
         
 if __name__ == "__main__":
     main()
